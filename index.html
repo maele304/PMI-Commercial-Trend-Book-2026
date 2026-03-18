@@ -205,6 +205,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--pmi-navy);color:var(--pmi
 </head>
 <body>
 
+<!-- PASSWORD SCREEN -->
+<div id="lockScreen" style="position:fixed;inset:0;z-index:9999;background:var(--pmi-navy);display:flex;align-items:center;justify-content:center">
+  <div style="text-align:center;max-width:380px;padding:40px">
+    <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;margin-bottom:6px"><span style="background:linear-gradient(90deg,var(--pmi-cyan),#3b7dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">PMI</span> Commercial Trends</div>
+    <div style="font-size:12px;color:var(--pmi-gray-500);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:36px">Dashboard 2026–2029</div>
+    <input id="pwInput" type="password" placeholder="Enter password" style="width:100%;padding:14px 18px;background:rgba(255,255,255,0.05);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:white;font-family:'DM Sans',sans-serif;font-size:15px;text-align:center;outline:none;margin-bottom:14px" onkeydown="if(event.key==='Enter')checkPw()">
+    <button onclick="checkPw()" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--pmi-cyan),#3b7dff);border:none;border-radius:var(--radius-sm);color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer">Access Dashboard</button>
+    <div id="pwError" style="color:#ef4444;font-size:13px;margin-top:12px;display:none">Incorrect password. Please try again.</div>
+  </div>
+</div>
+<div id="appContent" style="display:none">
+
 <div class="header">
   <div>
     <div class="header-title"><span>PMI</span> Commercial Trends Dashboard</div>
@@ -787,6 +799,21 @@ function renderTrendMap(){
 function trendMapRow(t){
   return `<div class="tmap-trend" data-id="${t.id}"><span class="tmap-dot"></span>${t.name}</div>`;
 }
+</script>
+</div><!-- end appContent -->
+<script>
+function checkPw(){
+  const pw=document.getElementById('pwInput').value;
+  if(pw==='pmicommercial2026'){
+    document.getElementById('lockScreen').style.display='none';
+    document.getElementById('appContent').style.display='block';
+  }else{
+    document.getElementById('pwError').style.display='block';
+    document.getElementById('pwInput').style.borderColor='#ef4444';
+    setTimeout(()=>{document.getElementById('pwInput').style.borderColor='';},1500);
+  }
+}
+document.getElementById('pwInput').focus();
 </script>
 </body>
 </html>
