@@ -267,7 +267,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--pmi-navy);color:var(--pmi
       <div class="stat-card" style="cursor:pointer" onclick="document.querySelector('[data-tab=b2b]').click()"><div class="label">🏪 Channel</div><div class="value" style="font-size:18px">Indirect Retail / B2B</div><div class="detail">Convenience, Small Retailers, HORECA, Specialists, Distributors, Wholesale</div></div>
       <div class="stat-card" style="cursor:pointer" onclick="document.querySelector('[data-tab=brand]').click()"><div class="label">🏬 Channel</div><div class="value" style="font-size:18px">Brand Retail</div><div class="detail">Own-operated IQOS flagship boutiques & digital store ecosystem</div></div>
       <div class="stat-card" style="cursor:pointer" onclick="document.querySelector('[data-tab=social]').click()"><div class="label">📱 Channel</div><div class="value" style="font-size:18px">Social Media</div><div class="detail">Owned pages, age-gated communities, influencer & social commerce</div></div>
-      <div class="stat-card" style="cursor:pointer" onclick="document.querySelector('[data-tab=ecom]').click()"><div class="label">🛒 Channel</div><div class="value" style="font-size:18px">B2C E-commerce</div><div class="detail">DTC e-commerce, social commerce, quick commerce, subscriptions</div></div>
+      <div class="stat-card" style="cursor:pointer" onclick="document.querySelector('[data-tab=ecom]').click()"><div class="label">🛒 Channel</div><div class="value" style="font-size:18px">B2C E-commerce</div><div class="detail">Owned website, Marketplace, Quick commerce</div></div>
       <div class="stat-card" style="cursor:pointer" onclick="document.querySelector('[data-tab=care]').click()"><div class="label">🎧 Channel</div><div class="value" style="font-size:18px">Customer Care</div><div class="detail">Contact center, live chat & chatbot, onboarding, after-sales service</div></div>
     </div>
     <div class="stat-card" style="cursor:pointer;margin-top:16px;background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(59,125,255,0.06));border:1px solid rgba(0,212,255,0.2)" onclick="document.querySelector('[data-tab=omni]').click()"><div class="label">🔗 Omnichannel</div><div class="value" style="font-size:18px">Integrated Approach Spanning All Channels</div><div class="detail">Data orchestration, experience management, lifecycle CRM, integrated planning, and RTM-digital convergence</div></div>
@@ -506,6 +506,19 @@ function renderChannelPanel(tabKey){
         <div class="channel-stat"><div class="cs-label">Trends</div><div class="cs-value">${ct.length}</div></div>
       </div>
     </div>
+  </div>`;
+
+  // Badge legend
+  html+=`<div style="display:flex;flex-wrap:wrap;gap:16px;padding:14px 18px;background:rgba(255,255,255,0.02);border:1px solid var(--card-border);border-radius:var(--radius-sm);margin-bottom:28px;font-size:12px;color:var(--pmi-gray-300)">
+    <span style="font-weight:600;color:var(--pmi-gray-200)">Legend:</span>
+    <span><span class="badge badge-ai" style="font-size:9px;padding:2px 7px;margin-right:4px">⚡ AI-Driven</span> Trend powered by AI / ML technology</span>
+    <span><span class="badge badge-mature" style="font-size:9px;padding:2px 7px;margin-right:4px">Mature</span> Standard practice, widely adopted</span>
+    <span><span class="badge badge-scaling" style="font-size:9px;padding:2px 7px;margin-right:4px">Scaling</span> Growing adoption, not yet universal</span>
+    <span><span class="badge badge-emerging" style="font-size:9px;padding:2px 7px;margin-right:4px">Emerging</span> Pre-scale, early stage</span>
+    <span><span class="badge badge-high" style="font-size:9px;padding:2px 7px;margin-right:4px">High Impact</span> Significant PMI revenue / strategic effect</span>
+    <span><span class="badge badge-medium" style="font-size:9px;padding:2px 7px;margin-right:4px">Medium Impact</span> Moderate PMI effect</span>
+    <span><span class="badge badge-industry" style="font-size:9px;padding:2px 7px;margin-right:4px">Category Specific</span> Nicotine & Tobacco specific trend</span>
+    <span><span class="badge badge-commercial" style="font-size:9px;padding:2px 7px;margin-right:4px">Commercial</span> Pure commercial / go-to-market trend</span>
   </div>`;
 
   if(tabKey==='b2b'){
