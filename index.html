@@ -163,6 +163,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--pmi-navy);color:var(--pmi
 .section-title::before{content:'';width:4px;height:22px;background:linear-gradient(180deg,var(--pmi-cyan),var(--pmi-blue));border-radius:2px}
 .table-container{overflow-x:auto;border-radius:var(--radius)}
 
+/* ── MULTI-SELECT DROPDOWN ── */
+.ms-dropdown{position:relative;display:inline-block;min-width:200px}
+.ms-toggle{background:rgba(255,255,255,0.05);border:1px solid var(--card-border);color:var(--pmi-white);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 32px 8px 14px;border-radius:var(--radius-sm);cursor:pointer;width:100%;text-align:left;position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ms-toggle::after{content:'▾';position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--pmi-gray-500)}
+.ms-panel{display:none;position:absolute;top:100%;left:0;right:0;background:#0a1f3d;border:1px solid var(--card-border);border-radius:var(--radius-sm);margin-top:4px;z-index:50;max-height:260px;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.ms-panel.open{display:block}
+.ms-option{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;font-size:13px;color:var(--pmi-gray-200);transition:background .15s}
+.ms-option:hover{background:rgba(255,255,255,.05)}
+.ms-option input{accent-color:var(--pmi-cyan);width:15px;height:15px;cursor:pointer}
+.ms-option.all-opt{border-bottom:1px solid var(--card-border);font-weight:600;color:var(--pmi-cyan)}
+
 /* ── TREND MAP ── */
 .tmap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:20px;margin-bottom:20px}
 .tmap-channel{background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);overflow:hidden}
@@ -595,36 +606,108 @@ function renderChannelPanel(tabKey){
 function renderSummary(){
   const panel=document.getElementById('panel-summary');
   const channels=[...new Set(TRENDS.map(t=>t.channel))];
+  const aiOpts=['Yes','Hybrid','No'];
+  const impOpts=['High','Medium','Low'];
+  const matOpts=['Mature','Scaling','Emerging'];
+
+  function msDropdown(id, label, options){
+    let h=`<div class="ms-dropdown" id="${id}">
+      <button class="ms-toggle" id="${id}-btn">All</button>
+      <div class="ms-panel" id="${id}-panel">
+        <label class="ms-option all-opt"><input type="checkbox" value="all" checked> Select All</label>`;
+    options.forEach(o=>{
+      h+=`<label class="ms-option"><input type="checkbox" value="${o}" checked> ${o}</label>`;
+    });
+    h+=`</div></div>`;
+    return h;
+  }
+
   panel.innerHTML=`
     <div class="section-title">Trend Summary — Cross-Channel View</div>
     <div class="filters">
-      <label>Channel</label>
-      <select id="filterChannel"><option value="all">All Channels</option>${channels.map(c=>`<option value="${c}">${c}</option>`).join('')}</select>
-      <label>AI-Driven</label>
-      <select id="filterAI"><option value="all">All</option><option value="Yes">Yes</option><option value="Hybrid">Hybrid</option><option value="No">No</option></select>
-      <label>Impact</label>
-      <select id="filterImpact"><option value="all">All</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select>
-      <label>Maturity</label>
-      <select id="filterMaturity"><option value="all">All</option><option value="Mature">Mature</option><option value="Scaling">Scaling</option><option value="Emerging">Emerging</option></select>
+      <label>Channel</label>${msDropdown('fCh','Channel',channels)}
+      <label>AI-Driven</label>${msDropdown('fAI','AI',aiOpts)}
+      <label>Impact</label>${msDropdown('fImp','Impact',impOpts)}
+      <label>Maturity</label>${msDropdown('fMat','Maturity',matOpts)}
     </div>
     <div class="table-container"><table class="summary-table">
       <thead><tr><th>#</th><th>Channel</th><th>Sub-Channel</th><th>Trend Name</th><th>AI</th><th>Maturity</th><th>Impact</th><th>Category</th></tr></thead>
       <tbody id="summaryBody"></tbody>
     </table></div>`;
+
+  // Wire up multi-select dropdowns
+  ['fCh','fAI','fImp','fMat'].forEach(id=>{
+    const btn=document.getElementById(id+'-btn');
+    const panelEl=document.getElementById(id+'-panel');
+    const allCb=panelEl.querySelector('input[value="all"]');
+    const itemCbs=[...panelEl.querySelectorAll('input:not([value="all"])')];
+
+    btn.addEventListener('click',e=>{
+      e.stopPropagation();
+      // Close other panels
+      document.querySelectorAll('.ms-panel.open').forEach(p=>{if(p!==panelEl)p.classList.remove('open')});
+      panelEl.classList.toggle('open');
+    });
+
+    allCb.addEventListener('change',()=>{
+      itemCbs.forEach(cb=>cb.checked=allCb.checked);
+      updateMsLabel(id,btn,allCb,itemCbs);
+      updateSummaryTable();
+    });
+
+    itemCbs.forEach(cb=>{
+      cb.addEventListener('change',()=>{
+        allCb.checked=itemCbs.every(c=>c.checked);
+        updateMsLabel(id,btn,allCb,itemCbs);
+        updateSummaryTable();
+      });
+    });
+  });
+
+  // Close panels on outside click
+  document.addEventListener('click',()=>{
+    document.querySelectorAll('.ms-panel.open').forEach(p=>p.classList.remove('open'));
+  });
+  panel.querySelectorAll('.ms-dropdown').forEach(d=>d.addEventListener('click',e=>e.stopPropagation()));
+
   updateSummaryTable();
-  ['filterChannel','filterAI','filterImpact','filterMaturity'].forEach(id=>document.getElementById(id).addEventListener('change',updateSummaryTable));
+}
+
+function updateMsLabel(id,btn,allCb,itemCbs){
+  const selected=itemCbs.filter(c=>c.checked).map(c=>c.value);
+  if(allCb.checked||selected.length===itemCbs.length){
+    btn.textContent='All';
+  }else if(selected.length===0){
+    btn.textContent='None';
+  }else if(selected.length<=2){
+    btn.textContent=selected.join(', ');
+  }else{
+    btn.textContent=selected.length+' selected';
+  }
+}
+
+function getMsValues(id){
+  const panelEl=document.getElementById(id+'-panel');
+  const allCb=panelEl.querySelector('input[value="all"]');
+  if(allCb.checked)return null; // null = all
+  return [...panelEl.querySelectorAll('input:not([value="all"]):checked')].map(c=>c.value);
 }
 
 function updateSummaryTable(){
-  const ch=document.getElementById('filterChannel').value;
-  const ai=document.getElementById('filterAI').value;
-  const imp=document.getElementById('filterImpact').value;
-  const mat=document.getElementById('filterMaturity').value;
+  const chVals=getMsValues('fCh');
+  const aiVals=getMsValues('fAI');
+  const impVals=getMsValues('fImp');
+  const matVals=getMsValues('fMat');
+
   let f=TRENDS;
-  if(ch!=='all')f=f.filter(t=>t.channel===ch);
-  if(ai!=='all')f=f.filter(t=>t.ai_driven===ai);
-  if(imp!=='all')f=f.filter(t=>{const s=getImpactShort(t.impact_level);return s===imp||(imp==='High'&&(s==='High'||s==='Med-High'))});
-  if(mat!=='all')f=f.filter(t=>t.maturity.toLowerCase().includes(mat.toLowerCase()));
+  if(chVals)f=f.filter(t=>chVals.includes(t.channel));
+  if(aiVals)f=f.filter(t=>aiVals.includes(t.ai_driven||'No'));
+  if(impVals)f=f.filter(t=>{
+    const s=getImpactShort(t.impact_level);
+    return impVals.some(v=>s===v||(v==='High'&&s==='Med-High'));
+  });
+  if(matVals)f=f.filter(t=>matVals.some(v=>t.maturity.toLowerCase().includes(v.toLowerCase())));
+
   const body=document.getElementById('summaryBody');
   body.innerHTML=f.map((t,i)=>`<tr>
     <td style="color:var(--pmi-gray-500)">${i+1}</td>
